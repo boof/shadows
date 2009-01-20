@@ -1,23 +1,31 @@
 module Shadows
   class Base < ActionView::Base
 
-    def self.root
-      # TODO: make this configurable
-      File.join Rails.root, %w[ app shadows ]
+    def self.load_paths=(paths)
+      @@load_paths = paths
+      Rails.configuration.load_paths |= paths
+    end
+    def self.load_paths
+      @@load_paths
     end
 
-    def initialize(model, base)
+    @@options = {}
+    cattr_accessor :options
+
+    def initialize(origin, base)
       # TODO: Initialize base when controller instance is created
-      name      = model.class.name.underscore
-      load_path = File.join Shadows::Base.root, name
-      super [ load_path ], { name => model, :model => model }, base
+
+      name        = origin.class.name.underscore
+      load_paths  = @@load_paths.map { |p| File.join p, name }
+
+      super load_paths, { name => origin, :origin => origin }, base
     end
 
     def to_s(shape = nil, *args)
       _evaluate_assigns_and_ivars
 
       if shape.nil?
-        drop :self, *args rescue escape_once @assigns[:model].inspect
+        drop :self, *args rescue @assigns[:origin].to_s_without_shadows
       elsif respond_to? :"#{ shape }"
         send :"#{ shape }", *args
       else
@@ -28,8 +36,14 @@ module Shadows
     protected
     def drop(shape, *args)
       opts = args.extract_options!
-      opts[:locals] ||= {}
-      opts[:locals].update @assigns[:model].attributes
+      opts[:locals] = opts.delete(:local_assigns) || {}
+
+      case locals = @@options[:local_assigns]
+      when Hash
+        opts[:locals].update locals
+      when Symbol
+        opts[:locals].update @assigns[:origin].send(locals)
+      end
 
       render opts.merge(:file => shape.to_s)
     end

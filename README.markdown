@@ -17,7 +17,7 @@ Shadows is a simple implementation of the Presenter pattern.
 
       def new
         form_for @product do |form|
-          render :form, :object => form
+          render :partial => 'form', :object => form
           submit_tag 'Create'
         end
       end
@@ -33,10 +33,10 @@ Shadows is a simple implementation of the Presenter pattern.
 
     class ProductsController < ApplicationController
       def show
-        render :text => Product.find( params[:id] ).to_s(self)
+        render :text => Product.find( params[:id] ).to_s(:self, self)
       end
       def new
-        render :text => Product.new.to_s(self, :new)
+        render :text => Product.new.to_s(:new, self)
       end
     end
 

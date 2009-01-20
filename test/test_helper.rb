@@ -2,17 +2,16 @@ require 'rubygems'
 require 'expectations'
 require 'action_view'
 
-require "#{ File.dirname __FILE__ }/../init.rb"
-
 module Rails
-  def self.root
-    "#{ File.dirname __FILE__ }"
+  @root = "#{ File.dirname __FILE__ }"
+  class << self; attr_reader :root; end
+  
+  class Configuration
+    attr_accessor :load_paths
   end
+  @configuration = Configuration.new
+  @configuration.load_paths = []
+  class << self; attr_reader :configuration; end
 end
 
-class << Shadows::Base
-  def root
-    "#{ File.dirname __FILE__ }/shadows"
-  end
-end
-
+require "#{ File.dirname __FILE__ }/../init.rb"

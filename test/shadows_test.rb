@@ -1,63 +1,59 @@
 require 'test_helper'
 
-Item = Struct.new(:attributes) do
-  extend Shadows::Extension
-  attach_shadows
+$shadows_path = "#{ File.dirname __FILE__ }/shadows"
 
-  def inspect
-    'inspect'
-  end
+class WithShadowShadow < Shadows::Base
+
+  def with_shadow; 'WithShadow'; end
 
 end
+WithShadow = Struct.new(:attributes)
+WithShadow.extend Shadows::Extension
+WithShadow.attach_shadows
 
-class ItemShadow < Shadows::Base
+module WithHelpersHelper
 
-  def item_shadow
-    'ItemShadow'
-  end
-
-end
-module ItemsHelper
-
-  def br
-    tag :br
-  end
-
-  def items_helper
-    'ItemsHelper'
-  end
-  def et
-    drop :existing_template
-  end
+  def br; tag :br; end
+  def with_helper; 'WithHelper'; end
+  def et; drop :existing_template; end
 
 end
+WithHelper = Struct.new(:attributes)
+WithHelper.extend Shadows::Extension
+WithHelper.attach_shadows
 
 Expectations do
 
-  expect 'inspect' do
-    Item.new({}).to_s
+  expect [ File.join(Rails.root, %w[ app shadows ]), $shadows_path ] do
+    Shadows::Base.load_paths += [$shadows_path]
   end
-  expect 'ItemShadow' do
-    Item.new({}).to_s :item_shadow
+
+  expect(/WithShadow/) do
+    WithShadow.new({}).to_s
   end
-  expect 'ItemsHelper' do
-    Item.new({}).to_s :items_helper
+  expect(/WithHelper/) do
+    WithHelper.new({}).to_s
+  end
+  expect 'WithShadow' do
+    WithShadow.new({}).to_s :with_shadow
+  end
+  expect 'WithHelper' do
+    WithHelper.new({}).to_s :with_helper
   end
   expect 'Existing Template' do
-    Item.new({}).to_s :existing_template
+    WithShadow.new({}).to_s :existing_template
   end
   expect 'Existing Template' do
-    Item.new({}).to_s :et
+    WithHelper.new({}).to_s :et
   end
   expect ActionView::MissingTemplate do
-    Item.new({}).to_s :missing_template
+    WithShadow.new({}).to_s :missing_template
   end
   expect 'attributes assigned locally' do
-    # FIXME: assign attributes locally
-    Item.new('var' => 'attributes assigned locally').to_s :var
+    WithShadow.new(:var => 'attributes assigned locally').to_s :var
   end
   expect '<br />' do
-    Item.new({}).to_s :br
+    WithHelper.new({}).to_s :br
   end
 
 end
