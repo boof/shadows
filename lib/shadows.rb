@@ -9,11 +9,30 @@ module Shadows
     end
   end
 
+  @controllers = {}
+  def self.free_controller
+    @controllers.delete Thread.current
+  end
+  def self.controller
+    @controllers[ Thread.current ]
+  end
+  def self.controller=(ctrl)
+    @controllers[ Thread.current ] = ctrl
+  end
+
   module Extension
     def attach_shadows(opts = {})
       extend Shadows::ClassMethods
       shadow.options = { :local_assigns => :attributes }.update opts
       include Shadows::InstanceMethods
+    end
+  end
+  class Filter
+    def self.filter(controller)
+      Shadows.controller = controller
+      yield
+    ensure
+      Shadows.free_controller
     end
   end
 
@@ -42,7 +61,7 @@ module Shadows
     end
     attr_reader :shadows
 
-    def to_s_with_shadows(shape = nil, base = nil, *args)
+    def to_s_with_shadows(shape = nil, base = Shadows.controller, *args)
       shadows[base].to_s(shape, *args)
     end
 

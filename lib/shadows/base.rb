@@ -13,8 +13,6 @@ module Shadows
     cattr_accessor :options
 
     def initialize(origin, base)
-      # TODO: Initialize base when controller instance is created
-
       name        = origin.class.name.underscore
       load_paths  = @@load_paths.map { |p| File.join p, name }
 
