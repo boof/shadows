@@ -48,23 +48,22 @@ module Shadows
 
     def self.included(base)
       base.class_eval do
-        alias_method_chain :initialize, :shadows
         alias_method :to_string_without_shadow, :to_s
         alias_method :to_s, :to_string_with_shadow
       end
     end
 
-    def initialize_with_shadows(*args, &block)
-      shadow    = self.class.shadow
-      @shadows  = Hash.new { |h, base| h[base] = shadow.new self, base }
-
-      initialize_without_shadows(*args, &block)
-    end
-    attr_reader :shadows
 
     def to_string_with_shadow(shape = nil, *args)
       shadow = shadows[ Shadows.controller ]
       shadow.to_s(shape, *args)
+    end
+
+    def shadows
+      @shadows ||= begin
+        shadow = self.class.shadow
+        Hash.new { |h, base| h[base] = shadow.new self, base }
+      end
     end
 
     def render(shape = nil, *args)

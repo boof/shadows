@@ -34,7 +34,7 @@ module Shadows
     protected
     def drop(shape, *args)
       opts = args.extract_options!
-      opts[:locals] = opts.delete(:local_assigns) || {}
+      opts[:locals] = opts.delete(:locals) || {}
 
       case locals = @@options[:local_assigns]
       when Hash
