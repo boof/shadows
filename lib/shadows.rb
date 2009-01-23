@@ -49,7 +49,8 @@ module Shadows
     def self.included(base)
       base.class_eval do
         alias_method_chain :initialize, :shadows
-        alias_method_chain :to_s, :shadows
+        alias_method :to_string_without_shadow, :to_s
+        alias_method :to_s, :to_string_with_shadow
       end
     end
 
@@ -61,8 +62,18 @@ module Shadows
     end
     attr_reader :shadows
 
-    def to_s_with_shadows(shape = nil, base = Shadows.controller, *args)
-      shadows[base].to_s(shape, *args)
+    def to_string_with_shadow(shape = nil, *args)
+      shadow = shadows[ Shadows.controller ]
+      shadow.to_s(shape, *args)
+    end
+
+    def render(shape = nil, *args)
+      shadow = shadows[ Shadows.controller ]
+
+      Shadows.controller.
+      instance_eval { render shadow.to_s(shape), *args }
+    rescue
+      to_string_with_shadow shape, *args
     end
 
   end

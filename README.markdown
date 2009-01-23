@@ -11,32 +11,33 @@ Shadows is a simple implementation of the Presenter pattern.
     end
 
 
+`app/shadows/product/self.html.erb`
+
+    I'm dropped when render/to_s is called without parameters.
+
+
 `app/shadows/product/shadow.rb`
 
     class Product::Shadow < Shadows::Base
 
-      def new
-        form_for @product do |form|
-          render :partial => 'form', :object => form
-          submit_tag 'Create'
-        end
+      # Is called when Shadow responds to render/to_s parameter.
+      def form
+        @product.new_record?? drop(:new) : drop(:edit)
       end
 
     end
 
 
-`app/shadows/product/product.html.erb`
-
-    
-
 `app/controllers/products_controller.rb`
 
     class ProductsController < ApplicationController
       def show
-        render :text => Product.find( params[:id] ).to_s(:self, self)
+        product = Product.find params[:id]
+        product.render
       end
       def new
-        render :text => Product.new.to_s(:new, self)
+        product = Product.new
+        product.render :form
       end
     end
 
@@ -44,11 +45,11 @@ Shadows is a simple implementation of the Presenter pattern.
 
 ## ROADMAP
 
-1.0:
+1st Version of Shadows:
 
-- implemented Presenter pattern
-- TODO: write Shadow generators
-- TODO: write Test suite
-- TODO: write Documentation
+- should implement Presenter pattern (ok)
+- should have a Test suite (almost complete)
+- should have generators (zero)
+- should have documentation (only this file, yet)
 
 Copyright (c) 2009 Florian Aßmann, released under the MIT license

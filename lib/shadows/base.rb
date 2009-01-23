@@ -23,7 +23,7 @@ module Shadows
       _evaluate_assigns_and_ivars
 
       if shape.nil?
-        drop :self, *args rescue @assigns[:origin].to_s_without_shadows
+        drop :self, *args rescue @assigns[:origin].to_string_without_shadow
       elsif respond_to? :"#{ shape }"
         send :"#{ shape }", *args
       else
