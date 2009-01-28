@@ -2,7 +2,7 @@ module Shadows
 
   def self.shadow_class(base)
     "#{ base.name }Shadow".constantize
-  rescue NameError
+  rescue NameError => e
     Class.new Shadows::Base do
       helper = "#{ base.name.pluralize }Helper".constantize rescue nil
       include helper if helper
@@ -62,7 +62,11 @@ module Shadows
     def shadows
       @shadows ||= begin
         shadow = self.class.shadow
-        Hash.new { |h, base| h[base] = shadow.new self, base }
+        Hash.new do |h, base|
+          template = shadow.new self, base
+          template.helpers.send :include, base.class.master_helper_module
+          h[base] = template
+        end
       end
     end
 
