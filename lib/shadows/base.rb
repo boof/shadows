@@ -6,7 +6,9 @@ module Shadows
       run :set_load_path, Rails.configuration do |config|
         config.load_paths += load_paths
       end
-
+      Rails::Initializer.
+      run :set_autoload_paths, Rails.configuration
+      
       @@load_paths = load_paths
     end
     def self.load_paths
