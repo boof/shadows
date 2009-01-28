@@ -1,9 +1,13 @@
 module Shadows
   class Base < ActionView::Base
 
-    def self.load_paths=(paths)
-      @@load_paths = paths
-      Rails.configuration.load_paths |= paths
+    def self.load_paths=(load_paths)
+      Rails::Initializer.
+      run :set_load_path, Rails.configuration do |config|
+        config.load_paths += load_paths
+      end
+
+      @@load_paths = load_paths
     end
     def self.load_paths
       @@load_paths
