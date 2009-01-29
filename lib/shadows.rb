@@ -23,8 +23,9 @@ module Shadows
   module Extension
     def attach_shadows(opts = {})
       extend Shadows::ClassMethods
-      shadow.options = { :local_assigns => :attributes }.update opts
       include Shadows::InstanceMethods
+
+      shadow.options = opts.to_hash
     end
   end
   class Filter
