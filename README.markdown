@@ -1,53 +1,62 @@
 # Shadows
 
-Shadows is a simple implementation of the Presenter pattern.
+Shadows is a simple ActionView based implementation of the Presenter pattern.
 
 ## SYNOPSIS
 
-`app/models/product.rb`
+app/models/product.rb
 
     class Product < ActiveRecord::Base
-      attach_shadows
+      attach_shadows :assigns => :attributes
     end
 
 
-`app/shadows/product/self.html.erb`
+app/shadows/product/self.html.erb
 
-    I'm dropped when render/to_s is called without parameters.
+    <%= @name %>
 
 
-`app/shadows/product/shadow.rb`
+app/shadows/product_shadow.rb
 
     class Product::Shadow < Shadows::Base
 
-      # Is called when Shadow responds to render/to_s parameter.
       def form
-        @product.new_record?? drop(:new) : drop(:edit)
+        @product.new_record?? render_shape(:new) : render_shape(:edit)
       end
 
     end
 
 
-`app/controllers/products_controller.rb`
+app/controllers/products_controller.rb
 
     class ProductsController < ApplicationController
+
       def show
         product = Product.find params[:id]
-        product.render
+        render :text => product.to_s, :layout => true
       end
       def new
         product = Product.new
+        # :render not yet implemented
         product.render :form
       end
+
+      # ...
+
     end
 
 ## SETUP
+
+    $ script/plugin install git://github.com/boof/shadows.git
+
+    # or
+    $ git submodule add git://github.com/boof/shadows.git vendor/plugins/shadows
 
 ## ROADMAP
 
 1st Version of Shadows:
 
-- should implement Presenter pattern (ok)
+- should implement Presenter pattern (almost complete)
 - should have a Test suite (almost complete)
 - should have generators (zero)
 - should have documentation (only this file, yet)
