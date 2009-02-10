@@ -41,7 +41,7 @@ module Shadows
       render opts.merge(:file => shape.to_s)
     end
     def _name
-      @__name ||= @origin.class.name.underscore
+      @__name ||= @origin.class.name.demodulize.underscore
     end
     def _load_paths
       name = _name and @@load_paths.map { |p| File.join p, name }
