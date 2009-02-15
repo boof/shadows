@@ -75,7 +75,7 @@ module Shadows
       shadow = shadows[ Shadows.controller ]
 
       Shadows.controller.
-      instance_eval { render shadow.to_s(shape), *args }
+      instance_eval { render :text => shadow.to_s(shape), *args }
     rescue
       to_string_with_shadow shape, *args
     end
