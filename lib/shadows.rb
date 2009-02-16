@@ -1,9 +1,9 @@
 module Shadows
 
-  def self.shadow_class(base)
+  def self.shadow_class(base, fallback = nil)
     "#{ base.name }Shadow".constantize
   rescue NameError => e
-    Class.new Shadows::Base do
+    fallback or Class.new Shadows::Base do
       helper = "#{ base.name.pluralize }Helper".constantize rescue nil
       include helper if helper
     end
@@ -43,6 +43,10 @@ module Shadows
       base.instance_variable_set :@shadow, Shadows.shadow_class(base)
     end
     attr_reader :shadow
+    def inherited(base)
+      super
+      base.instance_variable_set :@shadow, Shadows.shadow_class(base, @shadow)
+    end
 
   end
   module InstanceMethods
