@@ -14,8 +14,11 @@ module Shadows
     def self.load_paths=(paths) @@load_paths.replace paths end
     cattr_reader :load_paths
 
-    @@options = {}
-    cattr_accessor :options
+    def self.inherited(base)
+      base.instance_variable_set :@assigns, @assigns.dup if @assigns
+    end
+    def self.assigns=(assigns) @assigns = assigns end
+    def self.assigns; @assigns end
 
     def initialize(object, base)
       @origin = object
@@ -26,7 +29,7 @@ module Shadows
       _evaluate_assigns_and_ivars
 
       if shape.nil?
-        render_shape :self, *args rescue @origin.to_string_without_shadow
+        render_self(*args)
       elsif respond_to? :"#{ shape }"
         send :"#{ shape }", *args
       else
@@ -39,6 +42,11 @@ module Shadows
       opts = args.extract_options!
       render opts.merge(:file => shape.to_s)
     end
+    def render_self(*args)
+      render_shape :self, *args
+    rescue ActionView::MissingTemplate
+      @origin.to_string_without_shadow
+    end
     def _name
       @__name ||= @origin.class.name.underscore
     end
@@ -49,7 +57,7 @@ module Shadows
       name = _name and @@load_paths.map { |p| File.join p, name }
     end
     def _assigns
-      case assigns = @@options[:assigns]
+      case assigns = self.class.assigns
       when Array
         assigns.inject({}) { |mem, key| mem.update key => @origin.send(key) }
       when Symbol

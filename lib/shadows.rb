@@ -25,7 +25,7 @@ module Shadows
       extend Shadows::ClassMethods
       include Shadows::InstanceMethods
 
-      shadow.options = opts.to_hash
+      shadow.assigns = opts[:assigns]
     end
   end
   class Filter
