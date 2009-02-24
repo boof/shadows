@@ -2,17 +2,12 @@ module Shadows
   class Base < ActionView::Base
 
     class PathGateway < Array
-      def <<(path)
-        super and target.push path
-      end
+      def <<(path) target << path; super end
       def replace(paths)
-        each { |p| target.delete p }
-        super and each { |p| target.push p }
+        each { |p| target.delete p }; super; each { |p| target.push p }
       end
       protected
-      def target
-        @target ||= ActiveSupport::Dependencies.load_paths
-      end
+      def target; @target ||= ActiveSupport::Dependencies.load_paths end
     end
 
     @@load_paths = PathGateway.new
