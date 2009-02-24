@@ -1,19 +1,23 @@
 module Shadows
   class Base < ActionView::Base
 
-    def self.load_paths=(load_paths)
-      Rails::Initializer.
-      run :set_load_path, Rails.configuration do |config|
-        config.load_paths += load_paths
+    class PathGateway < Array
+      def <<(path)
+        super and target.push path
       end
-      Rails::Initializer.
-      run :set_autoload_paths, Rails.configuration
-      
-      @@load_paths = load_paths
+      def replace(paths)
+        each { |p| target.delete p }
+        super and each { |p| target.push p }
+      end
+      protected
+      def target
+        @target ||= ActiveSupport::Dependencies.load_paths
+      end
     end
-    def self.load_paths
-      @@load_paths
-    end
+
+    @@load_paths = PathGateway.new
+    def self.load_paths=(paths) @@load_paths.replace paths end
+    cattr_reader :load_paths
 
     @@options = {}
     cattr_accessor :options
