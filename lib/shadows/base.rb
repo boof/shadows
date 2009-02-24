@@ -41,17 +41,26 @@ module Shadows
       render opts.merge(:file => shape.to_s)
     end
     def _name
-      @__name ||= @origin.class.name.demodulize.underscore
+      @__name ||= @origin.class.name.underscore
+    end
+    def _basename
+      @__basename ||= @origin.class.name.demodulize.underscore
     end
     def _load_paths
       name = _name and @@load_paths.map { |p| File.join p, name }
     end
     def _assigns
       case assigns = @@options[:assigns]
-      when Symbol; @origin.send(assigns).to_hash
+      when Array
+        assigns.inject({}) { |mem, key| mem.update key => @origin.send(key) }
+      when Symbol
+        value = @origin.send assigns
+        if value.is_a? Hash then value
+        else { assigns => value }
+        end
       when Hash; assigns
       else {}
-      end.merge _name => @origin
+      end.merge _basename => @origin
     end
 
   end
