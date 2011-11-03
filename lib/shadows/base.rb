@@ -48,7 +48,7 @@ module Shadows
       render opts.merge(:file => shape.to_s)
     end
     def render_self(*args)
-      render_shape :self, *args
+      render_shape "#{ _basename }/self", *args
     rescue ActionView::MissingTemplate
       @origin.to_string_without_shadow
     end
