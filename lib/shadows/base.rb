@@ -1,18 +1,23 @@
 module Shadows
   class Base < ActionView::Base
 
-    class PathGateway < Array
-      def <<(path) target << path; super end
-      def replace(paths)
-        each { |p| target.delete p }; super; each { |p| target.push p }
+    def self.view_paths=(value)
+      @view_paths = process_view_paths(value) if value
+    end
+    self.view_paths = []
+
+    def self.view_paths
+      if defined? @view_paths
+        @view_paths
+      else
+        superclass.view_paths
       end
-      protected
-      def target; @target ||= ActiveSupport::Dependencies.load_paths end
     end
 
-    @@load_paths = PathGateway.new
-    def self.load_paths=(paths) @@load_paths.replace paths end
-    cattr_reader :load_paths
+    def self.append_view_path(path)
+      @view_paths = superclass.view_paths.dup if !defined?(@view_paths) || @view_paths.nil?
+      @view_paths.unshift(*path)
+    end
 
     def self.inherited(base)
       base.instance_variable_set :@assigns, @assigns.dup if @assigns
@@ -22,7 +27,7 @@ module Shadows
 
     def initialize(object, base)
       @origin = object
-      super _load_paths, _assigns, base
+      super self.class.view_paths, _assigns, base
     end
 
     def to_s(shape = nil, *args)
@@ -40,6 +45,7 @@ module Shadows
     protected
     def render_shape(shape, *args)
       opts = args.extract_options!
+#      raise [ self.class.name, shape, opts ].inspect
       render opts.merge(:file => shape.to_s)
     end
     def render_self(*args)
@@ -52,9 +58,6 @@ module Shadows
     end
     def _basename
       @__basename ||= @origin.class.name.demodulize.underscore
-    end
-    def _load_paths
-      name = _name and @@load_paths.map { |p| File.join p, name }
     end
     def _assigns
       case assigns = self.class.assigns

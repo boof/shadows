@@ -1,12 +1,23 @@
 module Shadows
 
   def self.shadow_class(base, fallback = nil)
-    "#{ base.name }Shadow".constantize
+    shadow_name = "#{ base.name }Shadow"
+    shadow_name.constantize
   rescue NameError => e
-    fallback or Class.new Shadows::Base do
+    return fallback if fallback
+
+    anon_shadow_class = Class.new Shadows::Base do
       helper = "#{ base.name.pluralize }Helper".constantize rescue nil
       include helper if helper
     end
+
+    names = shadow_name.split '::'
+    basename = names.pop
+
+    # Crawl outer classes until we have our class we assign the shadow class
+    # to.
+    names.inject(Class) { |klass, name| klass.const_get name.to_sym }.
+      const_set basename.to_sym, anon_shadow_class
   end
 
   @controllers = {}
@@ -78,8 +89,9 @@ module Shadows
     def render(shape = nil, *args)
       shadow = shadows[ Shadows.controller ]
 
-      Shadows.controller.
-      instance_eval { render :text => shadow.to_s(shape), *args }
+      Shadows.controller.instance_eval do
+        render({ :text => shadow.to_s(shape) }, *args)
+      end
     rescue
       to_string_with_shadow shape, *args
     end
