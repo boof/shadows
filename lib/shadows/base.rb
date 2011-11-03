@@ -45,7 +45,6 @@ module Shadows
     protected
     def render_shape(shape, *args)
       opts = args.extract_options!
-#      raise [ self.class.name, shape, opts ].inspect
       render opts.merge(:file => shape.to_s)
     end
     def render_self(*args)
